@@ -86,6 +86,10 @@ router.get('/me', protect, async (req, res) => {
   res.json(req.user);
 });
 
+router.get('/profile', protect, async (req, res) => {
+  res.json(req.user);
+});
+
 router.post(
   '/forgot-password',
   [body('email').isEmail().withMessage('Valid email is required')],

@@ -22,3 +22,4 @@ export const toggleTask = (id) => API.patch(`/tasks/${id}/toggle`);
 export const reorderTasks = (orderedIds) => API.put('/tasks/reorder', { orderedIds });
 export const forgotPassword = (email) => API.post('/auth/forgot-password', { email });
 export const resetPassword = (email, otp, password) => API.post('/auth/reset-password', { email, otp, password });
+export const getStats = () => API.get('/tasks/stats');

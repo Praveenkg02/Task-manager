@@ -9,11 +9,14 @@ router.use(protect);
 
 router.get('/', async (req, res) => {
   try {
-    const { search, status, page = 1, limit = 10 } = req.query;
+    const { search, status, priority, sort, page = 1, limit = 10 } = req.query;
     const filter = { userId: req.user._id };
 
     if (status && ['pending', 'completed'].includes(status)) {
       filter.status = status;
+    }
+    if (priority && ['low', 'medium', 'high'].includes(priority)) {
+      filter.priority = priority;
     }
 
     if (search) {
@@ -23,12 +26,21 @@ router.get('/', async (req, res) => {
       ];
     }
 
+    let sortOption = { position: 1 };
+    if (sort === 'dueDate') sortOption = { dueDate: 1 };
+    else if (sort === '-dueDate') sortOption = { dueDate: -1 };
+    else if (sort === 'priority') sortOption = { priority: 1 };
+    else if (sort === '-priority') sortOption = { priority: -1 };
+    else if (sort === 'createdAt') sortOption = { createdAt: 1 };
+    else if (sort === '-createdAt') sortOption = { createdAt: -1 };
+    else if (sort === 'title') sortOption = { title: 1 };
+
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const skip = (pageNum - 1) * limitNum;
 
     const [tasks, total] = await Promise.all([
-      Task.find(filter).sort({ position: 1, createdAt: -1 }).skip(skip).limit(limitNum),
+      Task.find(filter).sort(sortOption).skip(skip).limit(limitNum),
       Task.countDocuments(filter),
     ]);
 
@@ -41,6 +53,20 @@ router.get('/', async (req, res) => {
         pages: Math.ceil(total / limitNum),
       },
     });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/stats', async (req, res) => {
+  try {
+    const [total, completed, pending, overdue] = await Promise.all([
+      Task.countDocuments({ userId: req.user._id }),
+      Task.countDocuments({ userId: req.user._id, status: 'completed' }),
+      Task.countDocuments({ userId: req.user._id, status: 'pending' }),
+      Task.countDocuments({ userId: req.user._id, status: 'pending', dueDate: { $lt: new Date() } }),
+    ]);
+    res.json({ total, completed, pending, overdue });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -72,6 +98,8 @@ router.post(
       .isLength({ max: 100 }).withMessage('Title cannot exceed 100 characters'),
     body('description').optional().trim().isLength({ max: 500 })
       .withMessage('Description cannot exceed 500 characters'),
+    body('priority').optional().isIn(['low', 'medium', 'high']).withMessage('Invalid priority'),
+    body('dueDate').optional().isISO8601().withMessage('Invalid date'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -82,6 +110,8 @@ router.post(
       const task = await Task.create({
         title: req.body.title,
         description: req.body.description || '',
+        priority: req.body.priority || 'medium',
+        dueDate: req.body.dueDate || null,
         userId: req.user._id,
       });
       res.status(201).json(task);
@@ -112,6 +142,15 @@ router.put('/:id', async (req, res) => {
         return res.status(400).json({ message: 'Invalid status' });
       }
       task.status = req.body.status;
+    }
+    if (req.body.priority !== undefined) {
+      if (!['low', 'medium', 'high'].includes(req.body.priority)) {
+        return res.status(400).json({ message: 'Invalid priority' });
+      }
+      task.priority = req.body.priority;
+    }
+    if (req.body.dueDate !== undefined) {
+      task.dueDate = req.body.dueDate || null;
     }
 
     const updated = await task.save();

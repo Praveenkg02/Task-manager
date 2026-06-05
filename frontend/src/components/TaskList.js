@@ -6,7 +6,7 @@ const styles = {
   empty: {
     fontFamily: '"Caveat", cursive',
     fontSize: 20,
-    color: '#b0a090',
+    color: 'var(--text-muted)',
     textAlign: 'center',
     padding: '40px 0',
     lineHeight: '32px',
@@ -14,7 +14,7 @@ const styles = {
   loader: {
     fontFamily: '"Caveat", cursive',
     fontSize: 20,
-    color: '#b0a090',
+    color: 'var(--text-muted)',
     textAlign: 'center',
     padding: '40px 0',
   },
@@ -28,17 +28,17 @@ const styles = {
   },
   pageBtn: {
     background: 'transparent',
-    border: '1px solid #dcd3c4',
+    border: '1px solid var(--border-paper)',
     borderRadius: 4,
-    color: '#6b5e4e',
+    color: 'var(--text-secondary)',
     padding: '4px 14px',
     cursor: 'pointer',
     fontSize: 15,
     fontFamily: '"Caveat", cursive',
     fontWeight: 600,
   },
-  activePage: { background: '#c9a96e', color: '#fff', borderColor: '#c9a96e' },
-  pageInfo: { fontFamily: '"Caveat", cursive', fontSize: 15, color: '#b0a090' },
+  activePage: { background: 'var(--accent)', color: '#fff', borderColor: 'var(--accent)' },
+  pageInfo: { fontFamily: '"Caveat", cursive', fontSize: 15, color: 'var(--text-muted)' },
 };
 
 export default function TaskList({ tasks, loading, onToggle, onEdit, onDelete, pagination, onPageChange, onReorder }) {

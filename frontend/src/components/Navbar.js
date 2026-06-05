@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const styles = {
   header: {
@@ -41,17 +42,21 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  const { dark, toggle } = useTheme();
   const handleLogout = () => { logout(); navigate('/login'); };
 
   return (
     <header style={styles.header}>
       <Link to="/" style={styles.logo}>&#x270D; Task Journal</Link>
-      {user && (
-        <div style={styles.right}>
-          <span style={styles.name}>{user.name}</span>
-          <button style={styles.btn} onClick={handleLogout}>Logout</button>
-        </div>
-      )}
+      <div style={styles.right}>
+        <button style={styles.btn} onClick={toggle}>{dark ? '\u2600' : '\u263E'}</button>
+        {user && (
+          <>
+            <span style={styles.name}>{user.name}</span>
+            <button style={styles.btn} onClick={handleLogout}>Logout</button>
+          </>
+        )}
+      </div>
     </header>
   );
 }
