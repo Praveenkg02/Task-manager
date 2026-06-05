@@ -97,59 +97,66 @@ router.post(
 
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
-      return res.json({ message: 'If that email is registered, a reset link will be sent.' });
+      return res.json({ message: 'If that email is registered, an OTP will be sent.' });
     }
 
-    const resetToken = user.getResetPasswordToken();
+    const otp = user.generateResetOtp();
     await user.save({ validateBeforeSave: false });
-
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
 
     const transporter = getTransporter();
     if (transporter) {
       try {
         await transporter.sendMail({
           to: user.email,
-          subject: 'Password Reset - Task Manager',
-          html: `<p>You requested a password reset.</p><p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`,
+          subject: 'Password Reset OTP - Task Manager',
+          html: `<p>Your OTP for password reset is:</p>
+                 <h2 style="letter-spacing:8px;font-size:28px;background:#f5f0e8;padding:12px;text-align:center;border-radius:6px;">${otp}</h2>
+                 <p>This OTP expires in 10 minutes.</p>
+                 <p>If you did not request this, please ignore this email.</p>`,
         });
       } catch {
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpire = undefined;
+        user.resetOtp = undefined;
+        user.resetOtpExpire = undefined;
         await user.save({ validateBeforeSave: false });
         return res.status(500).json({ message: 'Email could not be sent' });
       }
     } else {
-      console.log(`\n  PASSWORD RESET LINK for ${user.email}:`);
-      console.log(`  ${resetUrl}\n`);
+      console.log(`\n  PASSWORD RESET OTP for ${user.email}: ${otp}`);
+      console.log(`  Expires: ${new Date(user.resetOtpExpire).toLocaleTimeString()}\n`);
     }
 
-    res.json({ message: 'If that email is registered, a reset link will be sent.' });
+    res.json({ message: 'If that email is registered, an OTP will be sent.' });
   }
 );
 
 router.post(
-  '/reset-password/:token',
-  [body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')],
+  '/reset-password',
+  [
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('otp').isLength({ min: 6, max: 6 }).withMessage('Valid OTP is required'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+    const { email, otp, password } = req.body;
+    const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
     const user = await User.findOne({
-      resetPasswordToken: hashedToken,
-      resetPasswordExpire: { $gt: Date.now() },
+      email,
+      resetOtp: hashedOtp,
+      resetOtpExpire: { $gt: Date.now() },
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired token' });
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
 
-    user.password = req.body.password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
+    user.password = password;
+    user.resetOtp = undefined;
+    user.resetOtpExpire = undefined;
     await user.save();
 
     res.json({ message: 'Password reset successful', token: generateToken(user._id) });

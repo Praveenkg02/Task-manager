@@ -1,121 +1,112 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { forgotPassword } from '../api/axios';
+import { useNavigate, Link } from 'react-router-dom';
+import { forgotPassword as sendOtpApi, resetPassword } from '../api/axios';
 
 const styles = {
   wrapper: {
-    minHeight: 'calc(100vh - 56px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#e8e0d0',
+    minHeight: 'calc(100vh - 56px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e8e0d0',
   },
   card: {
-    background: '#faf6ef',
-    padding: '36px 44px',
-    borderRadius: '4px 12px 12px 4px',
-    width: '100%',
-    maxWidth: 400,
-    boxShadow: '3px 3px 12px rgba(0,0,0,0.1)',
-    borderLeft: '4px solid #c9a96e',
-    position: 'relative',
+    background: '#faf6ef', padding: '36px 44px', borderRadius: '4px 12px 12px 4px', width: '100%', maxWidth: 400,
+    boxShadow: '3px 3px 12px rgba(0,0,0,0.1)', borderLeft: '4px solid #c9a96e', position: 'relative',
   },
   ruledBg: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent 31px, #dcd3c4 31px, #dcd3c4 32px)',
-    backgroundSize: '100% 32px',
-    pointerEvents: 'none',
-    opacity: 0.4,
-    borderRadius: '0 12px 12px 0',
+    backgroundSize: '100% 32px', pointerEvents: 'none', opacity: 0.4, borderRadius: '0 12px 12px 0',
   },
   content: { position: 'relative', zIndex: 1 },
   title: {
-    fontFamily: '"Caveat", cursive',
-    textAlign: 'center',
-    margin: '0 0 20px',
-    color: '#3b2f2a',
-    fontSize: 32,
-    fontWeight: 700,
-    borderBottom: '2px solid #c9a96e',
-    paddingBottom: 8,
+    fontFamily: '"Caveat", cursive', textAlign: 'center', margin: '0 0 20px', color: '#3b2f2a',
+    fontSize: 32, fontWeight: 700, borderBottom: '2px solid #c9a96e', paddingBottom: 8,
   },
   input: {
-    width: '100%',
-    padding: '8px 0',
-    border: 'none',
-    borderBottom: '1px solid #dcd3c4',
-    background: 'transparent',
-    color: '#2c3e50',
-    fontSize: 16,
-    fontFamily: '"IBM Plex Serif", serif',
-    outline: 'none',
-    boxSizing: 'border-box',
-    marginBottom: 16,
+    width: '100%', padding: '8px 0', border: 'none', borderBottom: '1px solid #dcd3c4',
+    background: 'transparent', color: '#2c3e50', fontSize: 16, fontFamily: '"IBM Plex Serif", serif',
+    outline: 'none', boxSizing: 'border-box', marginBottom: 16,
   },
   btn: {
-    width: '100%',
-    padding: 10,
-    border: 'none',
-    borderRadius: 4,
-    background: '#c9a96e',
-    color: '#fff',
-    fontSize: 20,
-    fontFamily: '"Caveat", cursive',
-    fontWeight: 700,
-    cursor: 'pointer',
-    marginBottom: 16,
+    width: '100%', padding: 10, border: 'none', borderRadius: 4, background: '#c9a96e', color: '#fff',
+    fontSize: 20, fontFamily: '"Caveat", cursive', fontWeight: 700, cursor: 'pointer', marginBottom: 16,
   },
   link: { color: '#c9a96e', textDecoration: 'none', fontFamily: '"Caveat", cursive', fontSize: 18, fontWeight: 600 },
   linkWrap: { textAlign: 'center', color: '#8a7a6a', fontFamily: '"Caveat", cursive', fontSize: 17 },
   msg: { color: '#4a7a5a', fontFamily: '"Caveat", cursive', fontSize: 17, marginBottom: 12, textAlign: 'center' },
   error: { color: '#d35d5d', fontFamily: '"Caveat", cursive', fontSize: 17, marginBottom: 12, textAlign: 'center' },
-  label: {
-    fontFamily: '"Caveat", cursive',
-    fontSize: 18,
-    color: '#6b5e4e',
-    marginBottom: 2,
-    display: 'block',
-  },
+  label: { fontFamily: '"Caveat", cursive', fontSize: 18, color: '#6b5e4e', marginBottom: 2, display: 'block' },
 };
 
 export default function ForgotPassword() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
+  const [otp, setOtp] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [step, setStep] = useState('email');
   const [error, setError] = useState('');
-  const [sent, setSent] = useState(false);
+  const [message, setMessage] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
     try {
       setError('');
       setMessage('');
-      const res = await forgotPassword(email);
-      setMessage(res.data.message);
-      setSent(true);
+      await sendOtpApi(email);
+      setMessage('OTP sent! Check your email (or Render logs).');
+      setStep('otp');
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong');
     }
   };
 
+  const handleReset = async (e) => {
+    e.preventDefault();
+    if (password !== confirm) {
+      setError('Passwords do not match');
+      return;
+    }
+    try {
+      setError('');
+      setMessage('');
+      await resetPassword(email, otp, password);
+      setMessage('Password reset successful! Redirecting to login...');
+      setTimeout(() => navigate('/login'), 1500);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Reset failed');
+    }
+  };
+
   return (
     <div style={styles.wrapper}>
-      <form style={styles.card} onSubmit={handleSubmit}>
+      <form style={styles.card} onSubmit={step === 'email' ? handleSendOtp : handleReset}>
         <div style={styles.ruledBg} />
         <div style={styles.content}>
-          <h2 style={styles.title}>&#x1F50D; Forgot Password</h2>
+          <h2 style={styles.title}>&#x1F511; Forgot Password</h2>
           {error && <div style={styles.error}>{error}</div>}
           {message && <div style={styles.msg}>{message}</div>}
-          {!sent && (
+          {step === 'email' ? (
             <>
               <label style={styles.label}>Email</label>
               <input style={styles.input} placeholder="Your email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-              <button style={styles.btn} type="submit">Send Reset Link</button>
+              <button style={styles.btn} type="submit">Send OTP</button>
+              <div style={styles.linkWrap}>
+                Remember your password? <Link to="/login" style={styles.link}>Sign in</Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <label style={styles.label}>OTP</label>
+              <input style={styles.input} placeholder="6-digit code" type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))} required maxLength={6} />
+              <label style={styles.label}>New Password</label>
+              <input style={styles.input} placeholder="At least 6 characters" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+              <label style={styles.label}>Confirm Password</label>
+              <input style={styles.input} placeholder="Repeat password" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={6} />
+              <button style={styles.btn} type="submit">Reset Password</button>
+              <div style={styles.linkWrap}>
+                <Link to="/login" style={styles.link}>Back to Sign In</Link>
+              </div>
             </>
           )}
-          <div style={styles.linkWrap}>
-            Remember your password? <Link to="/login" style={styles.link}>Sign in</Link>
-          </div>
         </div>
       </form>
     </div>
