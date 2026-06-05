@@ -17,11 +17,17 @@ const taskSchema = new mongoose.Schema({
     enum: ['pending', 'completed'],
     default: 'pending',
   },
+  position: {
+    type: Number,
+    default: 0,
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
 }, { timestamps: true });
+
+taskSchema.index({ userId: 1, position: 1 });
 
 module.exports = mongoose.model('Task', taskSchema);

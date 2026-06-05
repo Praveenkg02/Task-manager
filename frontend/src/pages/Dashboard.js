@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import TaskForm from '../components/TaskForm';
 import TaskList from '../components/TaskList';
-import { getTasks, createTask, updateTask, deleteTask, toggleTask } from '../api/axios';
+import { getTasks, createTask, updateTask, deleteTask, toggleTask, reorderTasks } from '../api/axios';
 
 const styles = {
   container: {
@@ -107,6 +107,18 @@ export default function Dashboard() {
     }
   };
 
+  const handleReorder = async (orderedIds) => {
+    try {
+      setTasks((prev) => {
+        const map = new Map(prev.map((t) => [t._id, t]));
+        return orderedIds.map((id) => map.get(id)).filter(Boolean);
+      });
+      await reorderTasks(orderedIds);
+    } catch (err) {
+      fetchTasks();
+    }
+  };
+
   const handleSubmit = editing ? handleUpdate : handleCreate;
 
   return (
@@ -134,6 +146,7 @@ export default function Dashboard() {
         onDelete={handleDelete}
         pagination={pagination}
         onPageChange={setPage}
+        onReorder={handleReorder}
       />
     </div>
   );

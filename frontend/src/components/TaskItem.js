@@ -1,7 +1,7 @@
 import React from 'react';
 
 const styles = {
-  card: {
+  card: (isDragging) => ({
     background: '#16213e',
     borderRadius: 10,
     padding: '14px 18px',
@@ -9,7 +9,9 @@ const styles = {
     alignItems: 'flex-start',
     gap: 12,
     border: '1px solid #0f3460',
-  },
+    opacity: isDragging ? 0.5 : 1,
+    cursor: 'grab',
+  }),
   content: { flex: 1, minWidth: 0 },
   title: (done) => ({
     fontSize: 16,
@@ -38,15 +40,30 @@ const styles = {
     cursor: 'pointer',
     accentColor: '#e94560',
   },
+  dragHandle: {
+    color: '#555',
+    cursor: 'grab',
+    fontSize: 18,
+    lineHeight: '24px',
+    userSelect: 'none',
+    paddingTop: 2,
+  },
 };
 
-export default function TaskItem({ task, onToggle, onEdit, onDelete }) {
+export default function TaskItem({ task, onToggle, onEdit, onDelete, onDragStart, onDragOver, onDragEnd, isDragging }) {
   const formattedDate = new Date(task.createdAt).toLocaleDateString('en-IN', {
     day: 'numeric', month: 'short', year: 'numeric',
   });
 
   return (
-    <div style={styles.card}>
+    <div
+      style={styles.card(isDragging)}
+      draggable
+      onDragStart={(e) => { e.dataTransfer.setData('text/plain', task._id); onDragStart?.(task._id); }}
+      onDragOver={(e) => { e.preventDefault(); onDragOver?.(task._id); }}
+      onDragEnd={onDragEnd}
+    >
+      <div style={styles.dragHandle}>&#x2630;</div>
       <input
         type="checkbox"
         checked={task.status === 'completed'}

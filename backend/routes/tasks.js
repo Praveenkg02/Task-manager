@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
     const skip = (pageNum - 1) * limitNum;
 
     const [tasks, total] = await Promise.all([
-      Task.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+      Task.find(filter).sort({ position: 1, createdAt: -1 }).skip(skip).limit(limitNum),
       Task.countDocuments(filter),
     ]);
 
@@ -41,6 +41,25 @@ router.get('/', async (req, res) => {
         pages: Math.ceil(total / limitNum),
       },
     });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put('/reorder', async (req, res) => {
+  try {
+    const { orderedIds } = req.body;
+    if (!Array.isArray(orderedIds)) {
+      return res.status(400).json({ message: 'orderedIds array is required' });
+    }
+    const ops = orderedIds.map((id, idx) => ({
+      updateOne: {
+        filter: { _id: id, userId: req.user._id },
+        update: { $set: { position: idx } },
+      },
+    }));
+    await Task.bulkWrite(ops);
+    res.json({ message: 'Reordered' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
