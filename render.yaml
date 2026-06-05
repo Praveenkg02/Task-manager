@@ -8,16 +8,12 @@ services:
     startCommand: npm start
     envVars:
       - key: NODE_ENV
-        value: production
+        value: development
       - key: PORT
-        value: "10000"
+        value: "5001"
       - key: MONGO_URI
         sync: false
       - key: JWT_SECRET
         sync: false
       - key: CORS_ORIGIN
-        value: https://task-manager-praveenkg.vercel.app
-      - key: SMTP_HOST
-        value: smtp.gmail.com
-      - key: SMTP_PORT
-        value: "587"
+        value: https://frontend-praveenkg.vercel.app
