@@ -11,10 +11,10 @@ const globalStyles = {
   body: {
     margin: 0,
     padding: 0,
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    background: '#1a1a2e',
-    color: '#fff',
-    WebkitFontSmoothing: 'antialiased',
+    fontFamily: '"IBM Plex Serif", "Georgia", serif',
+    background: '#e8e0d0',
+    color: '#2c3e50',
+    minHeight: '100vh',
   },
 };
 

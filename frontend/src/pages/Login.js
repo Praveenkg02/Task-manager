@@ -4,48 +4,81 @@ import { useAuth } from '../context/AuthContext';
 
 const styles = {
   wrapper: {
-    minHeight: 'calc(100vh - 60px)',
+    minHeight: 'calc(100vh - 56px)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#1a1a2e',
+    background: '#e8e0d0',
   },
   card: {
-    background: '#16213e',
-    padding: '32px 40px',
-    borderRadius: 12,
+    background: '#faf6ef',
+    padding: '36px 44px',
+    borderRadius: '4px 12px 12px 4px',
     width: '100%',
     maxWidth: 400,
-    border: '1px solid #0f3460',
+    boxShadow: '3px 3px 12px rgba(0,0,0,0.1)',
+    borderLeft: '4px solid #c9a96e',
+    position: 'relative',
   },
-  title: { textAlign: 'center', margin: '0 0 24px', color: '#fff', fontSize: 24 },
+  ruledBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent 31px, #dcd3c4 31px, #dcd3c4 32px)',
+    backgroundSize: '100% 32px',
+    pointerEvents: 'none',
+    opacity: 0.4,
+    borderRadius: '0 12px 12px 0',
+  },
+  content: { position: 'relative', zIndex: 1 },
+  title: {
+    fontFamily: '"Caveat", cursive',
+    textAlign: 'center',
+    margin: '0 0 20px',
+    color: '#3b2f2a',
+    fontSize: 32,
+    fontWeight: 700,
+    borderBottom: '2px solid #c9a96e',
+    paddingBottom: 8,
+  },
   input: {
     width: '100%',
-    padding: '10px 14px',
-    borderRadius: 6,
-    border: '1px solid #0f3460',
-    background: '#1a1a2e',
-    color: '#fff',
-    fontSize: 14,
+    padding: '8px 0',
+    border: 'none',
+    borderBottom: '1px solid #dcd3c4',
+    background: 'transparent',
+    color: '#2c3e50',
+    fontSize: 16,
+    fontFamily: '"IBM Plex Serif", serif',
     outline: 'none',
     boxSizing: 'border-box',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   btn: {
     width: '100%',
-    padding: 12,
-    borderRadius: 6,
+    padding: 10,
     border: 'none',
-    background: '#e94560',
+    borderRadius: 4,
+    background: '#c9a96e',
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 600,
+    fontSize: 20,
+    fontFamily: '"Caveat", cursive',
+    fontWeight: 700,
     cursor: 'pointer',
     marginBottom: 16,
   },
-  link: { color: '#e94560', textDecoration: 'none', fontSize: 14 },
-  linkWrap: { textAlign: 'center', color: '#a0a0b0', fontSize: 14 },
-  error: { color: '#e94560', fontSize: 13, marginBottom: 12, textAlign: 'center' },
+  link: { color: '#c9a96e', textDecoration: 'none', fontFamily: '"Caveat", cursive', fontSize: 18, fontWeight: 600 },
+  linkWrap: { textAlign: 'center', color: '#8a7a6a', fontFamily: '"Caveat", cursive', fontSize: 17 },
+  error: { color: '#d35d5d', fontFamily: '"Caveat", cursive', fontSize: 17, marginBottom: 12, textAlign: 'center' },
+  label: {
+    fontFamily: '"Caveat", cursive',
+    fontSize: 18,
+    color: '#6b5e4e',
+    marginBottom: 2,
+    display: 'block',
+  },
 };
 
 export default function Login() {
@@ -69,13 +102,18 @@ export default function Login() {
   return (
     <div style={styles.wrapper}>
       <form style={styles.card} onSubmit={handleSubmit}>
-        <h2 style={styles.title}>Login</h2>
-        {error && <div style={styles.error}>{error}</div>}
-        <input style={styles.input} placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input style={styles.input} placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <button style={styles.btn} type="submit">Login</button>
-        <div style={styles.linkWrap}>
-          Don't have an account? <Link to="/register" style={styles.link}>Register</Link>
+        <div style={styles.ruledBg} />
+        <div style={styles.content}>
+          <h2 style={styles.title}>&#x1F4DD; Sign In</h2>
+          {error && <div style={styles.error}>{error}</div>}
+          <label style={styles.label}>Email</label>
+          <input style={styles.input} placeholder="Your email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <label style={styles.label}>Password</label>
+          <input style={styles.input} placeholder="Your password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <button style={styles.btn} type="submit">Login</button>
+          <div style={styles.linkWrap}>
+            New here? <Link to="/register" style={styles.link}>Create an account</Link>
+          </div>
         </div>
       </form>
     </div>

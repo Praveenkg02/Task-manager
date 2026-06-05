@@ -2,46 +2,53 @@ import React, { useState, useEffect } from 'react';
 
 const styles = {
   form: {
-    background: '#16213e',
-    padding: 20,
-    borderRadius: 10,
-    marginBottom: 24,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
+    position: 'relative',
+    margin: '8px 0 16px',
+    padding: '8px 0 12px',
+    borderBottom: '2px dashed #c9a96e',
   },
   input: {
-    padding: '10px 14px',
-    borderRadius: 6,
-    border: '1px solid #0f3460',
-    background: '#1a1a2e',
-    color: '#fff',
-    fontSize: 14,
+    width: '100%',
+    padding: '6px 0',
+    border: 'none',
+    borderBottom: '1px solid #dcd3c4',
+    background: 'transparent',
+    color: '#2c3e50',
+    fontSize: 18,
+    fontFamily: '"Caveat", cursive',
+    fontWeight: 600,
     outline: 'none',
+    boxSizing: 'border-box',
+    marginBottom: 4,
   },
   textarea: {
-    padding: '10px 14px',
-    borderRadius: 6,
-    border: '1px solid #0f3460',
-    background: '#1a1a2e',
-    color: '#fff',
-    fontSize: 14,
+    width: '100%',
+    padding: '4px 0',
+    border: 'none',
+    borderBottom: '1px solid #dcd3c4',
+    background: 'transparent',
+    color: '#2c3e50',
+    fontSize: 16,
+    fontFamily: '"Caveat", cursive',
     outline: 'none',
     resize: 'vertical',
-    minHeight: 60,
-    fontFamily: 'inherit',
+    minHeight: 32,
+    boxSizing: 'border-box',
+    lineHeight: '32px',
   },
-  row: { display: 'flex', gap: 12 },
+  row: { display: 'flex', gap: 8, marginTop: 8 },
   btn: {
-    padding: '10px 24px',
-    borderRadius: 6,
+    padding: '6px 20px',
     border: 'none',
+    borderRadius: 4,
     cursor: 'pointer',
-    fontSize: 14,
+    fontSize: 16,
+    fontFamily: '"Caveat", cursive',
     fontWeight: 600,
   },
-  primaryBtn: { background: '#0f3460', color: '#fff' },
-  cancelBtn: { background: '#533483', color: '#fff' },
+  primaryBtn: { background: '#c9a96e', color: '#fff' },
+  cancelBtn: { background: '#d5c8b5', color: '#3b2f2a' },
+  error: { color: '#d35d5d', fontSize: 14, fontFamily: '"Caveat", cursive', marginTop: 4 },
 };
 
 export default function TaskForm({ onSubmit, editing, onCancelEdit }) {
@@ -77,20 +84,21 @@ export default function TaskForm({ onSubmit, editing, onCancelEdit }) {
     <form onSubmit={handleSubmit} style={styles.form}>
       <input
         style={styles.input}
-        placeholder="Task title"
+        placeholder="What needs to be done?"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
       <textarea
         style={styles.textarea}
-        placeholder="Description (optional)"
+        placeholder="Notes..."
         value={description}
         onChange={(e) => setDescription(e.target.value)}
+        rows={1}
       />
-      {error && <div style={{ color: '#e94560', fontSize: 13 }}>{error}</div>}
+      {error && <div style={styles.error}>{error}</div>}
       <div style={styles.row}>
         <button type="submit" style={{ ...styles.btn, ...styles.primaryBtn }}>
-          {editing ? 'Update Task' : 'Add Task'}
+          {editing ? 'Update' : 'Add'}
         </button>
         {editing && (
           <button type="button" style={{ ...styles.btn, ...styles.cancelBtn }} onClick={onCancelEdit}>

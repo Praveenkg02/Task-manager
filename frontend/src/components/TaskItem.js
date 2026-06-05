@@ -1,52 +1,71 @@
 import React from 'react';
 
 const styles = {
-  card: (isDragging) => ({
-    background: '#16213e',
-    borderRadius: 10,
-    padding: '14px 18px',
+  entry: (done, isDragging) => ({
+    padding: '10px 0 10px 8px',
+    borderBottom: '1px solid #e8e0d0',
     display: 'flex',
     alignItems: 'flex-start',
-    gap: 12,
-    border: '1px solid #0f3460',
-    opacity: isDragging ? 0.5 : 1,
+    gap: 10,
+    opacity: isDragging ? 0.4 : 1,
     cursor: 'grab',
+    transition: 'opacity 0.15s',
+    borderLeft: '3px solid transparent',
+    borderLeftColor: isDragging ? '#c9a96e' : 'transparent',
+    background: isDragging ? 'rgba(201,169,110,0.06)' : 'transparent',
   }),
-  content: { flex: 1, minWidth: 0 },
-  title: (done) => ({
-    fontSize: 16,
-    fontWeight: 600,
-    margin: '0 0 4px',
-    textDecoration: done ? 'line-through' : 'none',
-    opacity: done ? 0.6 : 1,
-    color: '#fff',
-  }),
-  desc: { fontSize: 13, color: '#a0a0b0', margin: 0, wordBreak: 'break-word' },
-  meta: { fontSize: 11, color: '#666', marginTop: 6 },
-  actions: { display: 'flex', gap: 6, flexShrink: 0 },
-  iconBtn: {
-    background: 'transparent',
-    border: '1px solid #333',
-    borderRadius: 6,
-    color: '#ccc',
-    padding: '4px 10px',
-    cursor: 'pointer',
-    fontSize: 13,
+  dragHandle: {
+    color: '#c9a96e',
+    cursor: 'grab',
+    fontSize: 20,
+    lineHeight: '28px',
+    userSelect: 'none',
+    opacity: 0.4,
+    flexShrink: 0,
   },
   checkbox: {
-    width: 20,
-    height: 20,
-    marginTop: 2,
+    width: 18,
+    height: 18,
+    marginTop: 4,
     cursor: 'pointer',
-    accentColor: '#e94560',
+    accentColor: '#c9a96e',
+    flexShrink: 0,
   },
-  dragHandle: {
-    color: '#555',
-    cursor: 'grab',
-    fontSize: 18,
+  content: { flex: 1, minWidth: 0 },
+  title: (done) => ({
+    fontFamily: '"Caveat", cursive',
+    fontSize: 20,
+    fontWeight: 600,
+    margin: 0,
+    textDecoration: done ? 'line-through' : 'none',
+    opacity: done ? 0.5 : 1,
+    color: '#2c3e50',
+    lineHeight: '32px',
+  }),
+  desc: {
+    fontFamily: '"Caveat", cursive',
+    fontSize: 17,
+    color: '#6b5e4e',
+    margin: '2px 0 0',
     lineHeight: '24px',
-    userSelect: 'none',
-    paddingTop: 2,
+  },
+  meta: {
+    fontFamily: '"Caveat", cursive',
+    fontSize: 14,
+    color: '#b0a090',
+    marginTop: 2,
+  },
+  actions: { display: 'flex', gap: 4, flexShrink: 0, marginTop: 4 },
+  iconBtn: {
+    background: 'transparent',
+    border: '1px solid #dcd3c4',
+    borderRadius: 4,
+    color: '#8a7a6a',
+    padding: '2px 10px',
+    cursor: 'pointer',
+    fontSize: 14,
+    fontFamily: '"Caveat", cursive',
+    fontWeight: 600,
   },
 };
 
@@ -57,7 +76,7 @@ export default function TaskItem({ task, onToggle, onEdit, onDelete, onDragStart
 
   return (
     <div
-      style={styles.card(isDragging)}
+      style={styles.entry(task.status === 'completed', isDragging)}
       draggable
       onDragStart={(e) => { e.dataTransfer.setData('text/plain', task._id); onDragStart?.(task._id); }}
       onDragOver={(e) => { e.preventDefault(); onDragOver?.(task._id); }}
@@ -71,14 +90,14 @@ export default function TaskItem({ task, onToggle, onEdit, onDelete, onDragStart
         style={styles.checkbox}
       />
       <div style={styles.content}>
-        <h3 style={styles.title(task.status === 'completed')}>{task.title}</h3>
-        {task.description && <p style={styles.desc}>{task.description}</p>}
-        <div style={styles.meta}>{formattedDate} &middot; {task.status}</div>
+        <div style={styles.title(task.status === 'completed')}>{task.title}</div>
+        {task.description && <div style={styles.desc}>{task.description}</div>}
+        <div style={styles.meta}>{formattedDate}</div>
       </div>
       <div style={styles.actions}>
         <button style={styles.iconBtn} onClick={() => onEdit(task)}>Edit</button>
-        <button style={{ ...styles.iconBtn, color: '#e94560', borderColor: '#e94560' }} onClick={() => onDelete(task._id)}>
-          Delete
+        <button style={{ ...styles.iconBtn, color: '#d35d5d', borderColor: '#d35d5d' }} onClick={() => onDelete(task._id)}>
+          Del
         </button>
       </div>
     </div>

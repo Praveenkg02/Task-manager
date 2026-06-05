@@ -2,39 +2,51 @@ import React, { useState, useCallback } from 'react';
 import TaskItem from './TaskItem';
 
 const styles = {
-  container: { display: 'flex', flexDirection: 'column', gap: 10 },
-  empty: { textAlign: 'center', color: '#666', padding: 40, fontSize: 15 },
+  list: { position: 'relative' },
+  empty: {
+    fontFamily: '"Caveat", cursive',
+    fontSize: 20,
+    color: '#b0a090',
+    textAlign: 'center',
+    padding: '40px 0',
+    lineHeight: '32px',
+  },
+  loader: {
+    fontFamily: '"Caveat", cursive',
+    fontSize: 20,
+    color: '#b0a090',
+    textAlign: 'center',
+    padding: '40px 0',
+  },
   pagination: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    marginTop: 16,
+    marginTop: 20,
+    flexWrap: 'wrap',
   },
   pageBtn: {
-    background: '#16213e',
-    border: '1px solid #0f3460',
-    color: '#fff',
-    padding: '6px 14px',
-    borderRadius: 6,
+    background: 'transparent',
+    border: '1px solid #dcd3c4',
+    borderRadius: 4,
+    color: '#6b5e4e',
+    padding: '4px 14px',
     cursor: 'pointer',
-    fontSize: 13,
+    fontSize: 15,
+    fontFamily: '"Caveat", cursive',
+    fontWeight: 600,
   },
-  activePage: { background: '#e94560', borderColor: '#e94560' },
-  pageInfo: { color: '#a0a0b0', fontSize: 13 },
+  activePage: { background: '#c9a96e', color: '#fff', borderColor: '#c9a96e' },
+  pageInfo: { fontFamily: '"Caveat", cursive', fontSize: 15, color: '#b0a090' },
 };
 
 export default function TaskList({ tasks, loading, onToggle, onEdit, onDelete, pagination, onPageChange, onReorder }) {
   const [dragId, setDragId] = useState(null);
   const [overId, setOverId] = useState(null);
 
-  const handleDragStart = useCallback((id) => {
-    setDragId(id);
-  }, []);
-
-  const handleDragOver = useCallback((id) => {
-    setOverId(id);
-  }, []);
+  const handleDragStart = useCallback((id) => { setDragId(id); }, []);
+  const handleDragOver = useCallback((id) => { setOverId(id); }, []);
 
   const handleDragEnd = useCallback(() => {
     if (dragId && overId && dragId !== overId) {
@@ -51,26 +63,24 @@ export default function TaskList({ tasks, loading, onToggle, onEdit, onDelete, p
     setOverId(null);
   }, [dragId, overId, tasks, onReorder]);
 
-  if (loading) return <div style={styles.empty}>Loading tasks...</div>;
-  if (!tasks || tasks.length === 0) return <div style={styles.empty}>No tasks found</div>;
+  if (loading) return <div style={styles.loader}>Turning pages...</div>;
+  if (!tasks || tasks.length === 0) return <div style={styles.empty}>Nothing written yet. Add your first task above.</div>;
 
   return (
-    <div>
-      <div style={styles.container}>
-        {tasks.map((task) => (
-          <TaskItem
-            key={task._id}
-            task={task}
-            onToggle={onToggle}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-            isDragging={dragId === task._id}
-          />
-        ))}
-      </div>
+    <div style={styles.list}>
+      {tasks.map((task) => (
+        <TaskItem
+          key={task._id}
+          task={task}
+          onToggle={onToggle}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          isDragging={dragId === task._id}
+        />
+      ))}
       {pagination && pagination.pages > 1 && (
         <div style={styles.pagination}>
           <button

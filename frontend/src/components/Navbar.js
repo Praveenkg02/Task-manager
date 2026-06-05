@@ -4,25 +4,36 @@ import { useAuth } from '../context/AuthContext';
 
 const styles = {
   header: {
-    background: '#1a1a2e',
-    color: '#fff',
-    padding: '0 24px',
-    height: 60,
+    background: '#3b2f2a',
+    color: '#f5f0e8',
+    padding: '0 32px',
+    height: 56,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderBottom: '3px solid #c9a96e',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+    fontFamily: '"Caveat", cursive',
   },
-  logo: { fontSize: 20, fontWeight: 700, color: '#fff', textDecoration: 'none' },
+  logo: {
+    fontSize: 28,
+    fontWeight: 700,
+    color: '#c9a96e',
+    textDecoration: 'none',
+    letterSpacing: 1,
+  },
   right: { display: 'flex', alignItems: 'center', gap: 16 },
-  name: { fontSize: 14, opacity: 0.8 },
+  name: { fontSize: 18, color: '#d4c5a9' },
   btn: {
     background: 'transparent',
-    border: '1px solid #e94560',
-    color: '#e94560',
-    padding: '6px 16px',
-    borderRadius: 6,
+    border: '1px solid #c9a96e',
+    color: '#c9a96e',
+    padding: '6px 20px',
+    borderRadius: 4,
     cursor: 'pointer',
-    fontSize: 14,
+    fontSize: 16,
+    fontFamily: '"Caveat", cursive',
+    fontWeight: 600,
   },
 };
 
@@ -34,7 +45,7 @@ export default function Navbar() {
 
   return (
     <header style={styles.header}>
-      <Link to="/" style={styles.logo}>TaskManager</Link>
+      <Link to="/" style={styles.logo}>&#x270D; Task Journal</Link>
       {user && (
         <div style={styles.right}>
           <span style={styles.name}>{user.name}</span>
