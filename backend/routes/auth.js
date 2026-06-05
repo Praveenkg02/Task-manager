@@ -40,12 +40,12 @@ router.post(
     }
     const { name, email, password } = req.body;
 
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: email.toLowerCase() });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email: email.toLowerCase(), password });
     res.status(201).json({
       _id: user._id,
       name: user.name,
@@ -68,7 +68,7 @@ router.post(
     }
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user._id,
@@ -99,7 +99,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: req.body.email.toLowerCase() });
     if (!user) {
       return res.json({ message: 'If that email is registered, an OTP will be sent.' });
     }
@@ -149,7 +149,7 @@ router.post(
     const { email, otp, password } = req.body;
     const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
     const user = await User.findOne({
-      email,
+      email: email.toLowerCase(),
       resetOtp: hashedOtp,
       resetOtpExpire: { $gt: Date.now() },
     });

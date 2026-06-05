@@ -32,11 +32,12 @@ export default function ForgotPassword() {
     try {
       setError('');
       setMessage('');
-      await sendOtpApi(email);
+      await sendOtpApi(email.toLowerCase());
       setMessage('OTP sent! Check your email (or Render logs).');
       setStep('otp');
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong');
+      const data = err.response?.data;
+      setError(data?.message || data?.errors?.[0]?.msg || 'Something went wrong');
     }
   };
 
@@ -49,11 +50,13 @@ export default function ForgotPassword() {
     try {
       setError('');
       setMessage('');
-      await resetPassword(email, otp, password);
+      await resetPassword(email.toLowerCase(), otp, password);
       setMessage('Password reset successful! Redirecting to login...');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
-      setError(err.response?.data?.message || 'Reset failed');
+      const data = err.response?.data;
+      const msg = data?.message || data?.errors?.[0]?.msg || 'Reset failed';
+      setError(msg);
     }
   };
 

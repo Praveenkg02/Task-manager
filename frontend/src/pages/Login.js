@@ -27,7 +27,7 @@ export default function Login() {
     e.preventDefault();
     try {
       setError('');
-      await login(email, password);
+      await login(email.toLowerCase(), password);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
