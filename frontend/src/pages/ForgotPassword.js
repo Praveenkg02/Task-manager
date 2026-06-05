@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
+import { forgotPassword } from '../api/axios';
 
 const styles = {
   wrapper: {
@@ -22,10 +22,7 @@ const styles = {
   },
   ruledBg: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: 0, left: 0, right: 0, bottom: 0,
     backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent 31px, #dcd3c4 31px, #dcd3c4 32px)',
     backgroundSize: '100% 32px',
     pointerEvents: 'none',
@@ -71,6 +68,7 @@ const styles = {
   },
   link: { color: '#c9a96e', textDecoration: 'none', fontFamily: '"Caveat", cursive', fontSize: 18, fontWeight: 600 },
   linkWrap: { textAlign: 'center', color: '#8a7a6a', fontFamily: '"Caveat", cursive', fontSize: 17 },
+  msg: { color: '#4a7a5a', fontFamily: '"Caveat", cursive', fontSize: 17, marginBottom: 12, textAlign: 'center' },
   error: { color: '#d35d5d', fontFamily: '"Caveat", cursive', fontSize: 17, marginBottom: 12, textAlign: 'center' },
   label: {
     fontFamily: '"Caveat", cursive',
@@ -81,21 +79,22 @@ const styles = {
   },
 };
 
-export default function Login() {
+export default function ForgotPassword() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setError('');
-      await login(email, password);
-      navigate('/');
+      setMessage('');
+      const res = await forgotPassword(email);
+      setMessage(res.data.message);
+      setSent(true);
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Something went wrong');
     }
   };
 
@@ -104,18 +103,18 @@ export default function Login() {
       <form style={styles.card} onSubmit={handleSubmit}>
         <div style={styles.ruledBg} />
         <div style={styles.content}>
-          <h2 style={styles.title}>&#x1F4DD; Sign In</h2>
+          <h2 style={styles.title}>&#x1F50D; Forgot Password</h2>
           {error && <div style={styles.error}>{error}</div>}
-          <label style={styles.label}>Email</label>
-          <input style={styles.input} placeholder="Your email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <label style={styles.label}>Password</label>
-          <input style={styles.input} placeholder="Your password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          <button style={styles.btn} type="submit">Login</button>
-          <div style={{ ...styles.linkWrap, marginBottom: 8 }}>
-            <Link to="/forgot-password" style={{ ...styles.link, fontSize: 16 }}>Forgot password?</Link>
-          </div>
+          {message && <div style={styles.msg}>{message}</div>}
+          {!sent && (
+            <>
+              <label style={styles.label}>Email</label>
+              <input style={styles.input} placeholder="Your email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <button style={styles.btn} type="submit">Send Reset Link</button>
+            </>
+          )}
           <div style={styles.linkWrap}>
-            New here? <Link to="/register" style={styles.link}>Create an account</Link>
+            Remember your password? <Link to="/login" style={styles.link}>Sign in</Link>
           </div>
         </div>
       </form>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { resetPassword } from '../api/axios';
 
 const styles = {
   wrapper: {
@@ -22,10 +22,7 @@ const styles = {
   },
   ruledBg: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: 0, left: 0, right: 0, bottom: 0,
     backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent 31px, #dcd3c4 31px, #dcd3c4 32px)',
     backgroundSize: '100% 32px',
     pointerEvents: 'none',
@@ -71,6 +68,7 @@ const styles = {
   },
   link: { color: '#c9a96e', textDecoration: 'none', fontFamily: '"Caveat", cursive', fontSize: 18, fontWeight: 600 },
   linkWrap: { textAlign: 'center', color: '#8a7a6a', fontFamily: '"Caveat", cursive', fontSize: 17 },
+  msg: { color: '#4a7a5a', fontFamily: '"Caveat", cursive', fontSize: 17, marginBottom: 12, textAlign: 'center' },
   error: { color: '#d35d5d', fontFamily: '"Caveat", cursive', fontSize: 17, marginBottom: 12, textAlign: 'center' },
   label: {
     fontFamily: '"Caveat", cursive',
@@ -81,21 +79,28 @@ const styles = {
   },
 };
 
-export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { login } = useAuth();
+export default function ResetPassword() {
+  const { token } = useParams();
   const navigate = useNavigate();
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (password !== confirm) {
+      setError('Passwords do not match');
+      return;
+    }
     try {
       setError('');
-      await login(email, password);
-      navigate('/');
+      setMessage('');
+      await resetPassword(token, password);
+      setMessage('Password reset successful! Redirecting to login...');
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Reset failed');
     }
   };
 
@@ -104,18 +109,16 @@ export default function Login() {
       <form style={styles.card} onSubmit={handleSubmit}>
         <div style={styles.ruledBg} />
         <div style={styles.content}>
-          <h2 style={styles.title}>&#x1F4DD; Sign In</h2>
+          <h2 style={styles.title}>&#x1F511; Reset Password</h2>
           {error && <div style={styles.error}>{error}</div>}
-          <label style={styles.label}>Email</label>
-          <input style={styles.input} placeholder="Your email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <label style={styles.label}>Password</label>
-          <input style={styles.input} placeholder="Your password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          <button style={styles.btn} type="submit">Login</button>
-          <div style={{ ...styles.linkWrap, marginBottom: 8 }}>
-            <Link to="/forgot-password" style={{ ...styles.link, fontSize: 16 }}>Forgot password?</Link>
-          </div>
+          {message && <div style={styles.msg}>{message}</div>}
+          <label style={styles.label}>New Password</label>
+          <input style={styles.input} placeholder="At least 6 characters" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+          <label style={styles.label}>Confirm Password</label>
+          <input style={styles.input} placeholder="Repeat password" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={6} />
+          <button style={styles.btn} type="submit">Reset Password</button>
           <div style={styles.linkWrap}>
-            New here? <Link to="/register" style={styles.link}>Create an account</Link>
+            <Link to="/login" style={styles.link}>Back to Sign In</Link>
           </div>
         </div>
       </form>

@@ -20,3 +20,5 @@ export const updateTask = (id, data) => API.put(`/tasks/${id}`, data);
 export const deleteTask = (id) => API.delete(`/tasks/${id}`);
 export const toggleTask = (id) => API.patch(`/tasks/${id}/toggle`);
 export const reorderTasks = (orderedIds) => API.put('/tasks/reorder', { orderedIds });
+export const forgotPassword = (email) => API.post('/auth/forgot-password', { email });
+export const resetPassword = (token, password) => API.post(`/auth/reset-password/${token}`, { password });
