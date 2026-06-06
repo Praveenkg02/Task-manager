@@ -111,9 +111,15 @@ router.post(
     const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
     const resetUrl = `${CLIENT_URL}/reset-password/${resetToken}`;
 
+    console.log(`[forgot-password] Request received for: ${user.email}`);
+    console.log(`[forgot-password] Reset URL: ${resetUrl}`);
+    console.log(`[forgot-password] Email sending started...`);
+
     try {
       await sendPasswordResetEmail(user.email, resetUrl);
-    } catch {
+      console.log(`[forgot-password] Email sent successfully to: ${user.email}`);
+    } catch (err) {
+      console.error(`[forgot-password] Nodemailer error:`, err.message);
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
       await user.save({ validateBeforeSave: false });
