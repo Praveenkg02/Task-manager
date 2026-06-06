@@ -53,7 +53,12 @@ Deployed at **[https://task-manager-praveenkg.vercel.app](https://task-manager-p
 
 ## Screenshots
 
-> *(Add screenshots or a demo video here)*
+| | |
+|---|---|
+| **Login** | **Register** |
+| ![Login](screenshots/login.png) | ![Register](screenshots/register.png) |
+| **Dashboard** | **Task Form** |
+| ![Dashboard](screenshots/dashboard.png) | ![Task Form](screenshots/task-form.png) |
 
 ---
 
