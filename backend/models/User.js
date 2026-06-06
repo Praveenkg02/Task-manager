@@ -20,8 +20,13 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters'],
   },
-  resetOtp: String,
-  resetOtpExpire: Date,
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: String,
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -35,11 +40,11 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-userSchema.methods.generateResetOtp = function () {
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  this.resetOtp = crypto.createHash('sha256').update(otp).digest('hex');
-  this.resetOtpExpire = Date.now() + 10 * 60 * 1000;
-  return otp;
+userSchema.methods.getResetPasswordToken = function () {
+  const token = crypto.randomBytes(32).toString('hex');
+  this.resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
+  this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+  return token;
 };
 
 module.exports = mongoose.model('User', userSchema);

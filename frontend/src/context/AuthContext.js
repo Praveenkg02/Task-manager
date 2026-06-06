@@ -13,8 +13,14 @@ export const AuthProvider = ({ children }) => {
     const stored = JSON.parse(localStorage.getItem('user'));
     if (stored?.token) {
       getMe()
-        .then((res) => { setUser(res.data); localStorage.setItem('user', JSON.stringify({ ...res.data, token: stored.token })); })
-        .catch(() => { localStorage.removeItem('user'); setUser(null); })
+        .then((res) => {
+          setUser(res.data);
+          localStorage.setItem('user', JSON.stringify({ ...res.data, token: stored.token }));
+        })
+        .catch(() => {
+          localStorage.removeItem('user');
+          setUser(null);
+        })
         .finally(() => setLoading(false));
     } else {
       setLoading(false);

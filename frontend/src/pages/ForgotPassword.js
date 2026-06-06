@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { forgotPassword as sendOtpApi, resetPassword } from '../api/axios';
+import { Link } from 'react-router-dom';
+import { forgotPassword } from '../api/axios';
 
 const styles = {
   wrapper: { minHeight: 'calc(100vh - 56px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page)' },
@@ -15,82 +15,47 @@ const styles = {
   msg: { color: '#4a7a5a', fontFamily: '"Caveat", cursive', fontSize: 17, marginBottom: 12, textAlign: 'center' },
   error: { color: '#d35d5d', fontFamily: '"Caveat", cursive', fontSize: 17, marginBottom: 12, textAlign: 'center' },
   label: { fontFamily: '"Caveat", cursive', fontSize: 18, color: 'var(--text-secondary)', marginBottom: 2, display: 'block' },
+  spinner: { display: 'inline-block', width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderRadius: '50%', borderTopColor: '#fff', animation: 'spin 0.6s linear infinite', verticalAlign: 'middle', marginRight: 8 },
 };
 
 export default function ForgotPassword() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [step, setStep] = useState('email');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSendOtp = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setMessage('');
+    setLoading(true);
     try {
-      setError('');
-      setMessage('');
-      await sendOtpApi(email.toLowerCase());
-      setMessage('OTP sent! Check your email (or Render logs).');
-      setStep('otp');
+      await forgotPassword(email.toLowerCase());
+      setMessage('If that email is registered, a reset link has been sent. Check your inbox.');
     } catch (err) {
       const data = err.response?.data;
       setError(data?.message || data?.errors?.[0]?.msg || 'Something went wrong');
-    }
-  };
-
-  const handleReset = async (e) => {
-    e.preventDefault();
-    if (password !== confirm) {
-      setError('Passwords do not match');
-      return;
-    }
-    try {
-      setError('');
-      setMessage('');
-      await resetPassword(email.toLowerCase(), otp, password);
-      setMessage('Password reset successful! Redirecting to login...');
-      setTimeout(() => navigate('/login'), 1500);
-    } catch (err) {
-      const data = err.response?.data;
-      const msg = data?.message || data?.errors?.[0]?.msg || 'Reset failed';
-      setError(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div style={styles.wrapper}>
-      <form style={styles.card} onSubmit={step === 'email' ? handleSendOtp : handleReset}>
+      <form style={styles.card} onSubmit={handleSubmit}>
         <div style={styles.ruledBg} />
         <div style={styles.content}>
-          <h2 style={styles.title}>&#x1F511; Forgot Password</h2>
+          <h2 style={styles.title}>{'\uD83D\uDD11'} Forgot Password</h2>
           {error && <div style={styles.error}>{error}</div>}
           {message && <div style={styles.msg}>{message}</div>}
-          {step === 'email' ? (
-            <>
-              <label style={styles.label}>Email</label>
-              <input style={styles.input} placeholder="Your email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-              <button style={styles.btn} type="submit">Send OTP</button>
-              <div style={styles.linkWrap}>
-                Remember your password? <Link to="/login" style={styles.link}>Sign in</Link>
-              </div>
-            </>
-          ) : (
-            <>
-              <label style={styles.label}>OTP</label>
-              <input style={styles.input} placeholder="6-digit code" type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))} required maxLength={6} />
-              <label style={styles.label}>New Password</label>
-              <input style={styles.input} placeholder="At least 6 characters" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-              <label style={styles.label}>Confirm Password</label>
-              <input style={styles.input} placeholder="Repeat password" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={6} />
-              <button style={styles.btn} type="submit">Reset Password</button>
-              <div style={styles.linkWrap}>
-                <Link to="/login" style={styles.link}>Back to Sign In</Link>
-              </div>
-            </>
-          )}
+          <label style={styles.label}>Email</label>
+          <input style={styles.input} placeholder="Your registered email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <button style={styles.btn} type="submit" disabled={loading}>
+            {loading && <span style={styles.spinner} />}{loading ? 'Sending...' : 'Send Reset Link'}
+          </button>
+          <div style={styles.linkWrap}>
+            Remember your password? <Link to="/login" style={styles.link}>Sign in</Link>
+          </div>
         </div>
       </form>
     </div>

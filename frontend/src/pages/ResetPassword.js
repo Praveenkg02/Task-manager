@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { resetPassword } from '../api/axios';
 
 const styles = {
   wrapper: { minHeight: 'calc(100vh - 56px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page)' },
@@ -13,15 +13,16 @@ const styles = {
   togglePw: { position: 'absolute', right: 0, top: 4, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13, fontFamily: '"IBM Plex Serif", serif', padding: '4px 0' },
   btn: { width: '100%', padding: 10, border: 'none', borderRadius: 4, background: 'var(--accent)', color: '#fff', fontSize: 20, fontFamily: '"Caveat", cursive', fontWeight: 700, cursor: 'pointer', marginBottom: 16 },
   link: { color: 'var(--accent)', textDecoration: 'none', fontFamily: '"Caveat", cursive', fontSize: 18, fontWeight: 600 },
-  linkWrap: { textAlign: 'center', color: 'var(--text-muted)', fontFamily: '"Caveat", cursive', fontSize: 17 },
   error: { color: '#d35d5d', fontFamily: '"Caveat", cursive', fontSize: 17, marginBottom: 12, textAlign: 'center' },
+  msg: { color: '#4a7a5a', fontFamily: '"Caveat", cursive', fontSize: 17, marginBottom: 12, textAlign: 'center' },
   label: { fontFamily: '"Caveat", cursive', fontSize: 18, color: 'var(--text-secondary)', marginBottom: 2, display: 'block' },
-  strength: (level) => ({
-    height: 3, borderRadius: 2, marginTop: -10, marginBottom: 14, background: ['#d35d5d', '#d4a040', '#4a7a5a', '#2e7d32'][level] || '#d35d5d',
+  spinner: { display: 'inline-block', width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderRadius: '50%', borderTopColor: '#fff', animation: 'spin 0.6s linear infinite', verticalAlign: 'middle', marginRight: 8 },
+  strengthBar: (level) => ({
+    height: 3, borderRadius: 2, marginTop: -10, marginBottom: 14,
+    background: ['#d35d5d', '#d4a040', '#4a7a5a', '#2e7d32'][level] || '#d35d5d',
     width: ['25%', '50%', '75%', '100%'][level],
     transition: 'all 0.3s',
   }),
-  spinner: { display: 'inline-block', width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderRadius: '50%', borderTopColor: '#fff', animation: 'spin 0.6s linear infinite', verticalAlign: 'middle', marginRight: 8 },
 };
 
 const pwStrength = (pw) => {
@@ -32,19 +33,17 @@ const pwStrength = (pw) => {
   if (/[^a-zA-Z0-9]/.test(pw)) s++;
   return Math.min(s, 3);
 };
-
 const pwLabels = ['', 'Weak', 'Fair', 'Strong', 'Very Strong'];
 
-export default function Register() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+export default function ResetPassword() {
+  const { token } = useParams();
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
-  const navigate = useNavigate();
 
   const strength = pwStrength(password);
 
@@ -61,40 +60,55 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await register(name, email.toLowerCase(), password);
-      navigate('/');
+      const { data } = await resetPassword(token, password);
+      setMessage('Password reset successful! Redirecting to login...');
+      setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Registration failed');
+      const data = err.response?.data;
+      setError(data?.message || data?.errors?.[0]?.msg || 'Reset failed. Token may be invalid or expired.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (message) {
+    return (
+      <div style={styles.wrapper}>
+        <div style={styles.card}>
+          <div style={styles.ruledBg} />
+          <div style={styles.content}>
+            <h2 style={styles.title}>{'\u2705'} Password Reset</h2>
+            <div style={styles.msg}>{message}</div>
+            <div style={{ textAlign: 'center', marginTop: 16 }}>
+              <Link to="/login" style={styles.link}>Sign in</Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.wrapper}>
       <form style={styles.card} onSubmit={handleSubmit}>
         <div style={styles.ruledBg} />
         <div style={styles.content}>
-          <h2 style={styles.title}>{'\uD83D\uDCDD'} Register</h2>
+          <h2 style={styles.title}>{'\uD83D\uDD11'} Reset Password</h2>
           {error && <div style={styles.error}>{error}</div>}
-          <label style={styles.label}>Name</label>
-          <input style={styles.input} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} required />
-          <label style={styles.label}>Email</label>
-          <input style={styles.input} placeholder="Your email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <label style={styles.label}>Password</label>
+          <label style={styles.label}>New Password</label>
           <div style={styles.inputWrap}>
-            <input style={styles.input} placeholder="Min 6 characters" type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+            <input style={styles.input} placeholder="At least 6 characters" type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             <button type="button" style={styles.togglePw} onClick={() => setShowPw((p) => !p)}>{showPw ? 'Hide' : 'Show'}</button>
           </div>
           {password && <div style={{ fontSize: 13, fontFamily: '"IBM Plex Serif", serif', color: '#b0a090', marginTop: -10, marginBottom: 2 }}>Strength: {pwLabels[strength]}</div>}
-          {password && <div style={styles.strength(strength)} />}
+          {password && <div style={styles.strengthBar(strength)} />}
           <label style={styles.label}>Confirm Password</label>
           <input style={styles.input} placeholder="Repeat password" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={6} />
           <button style={styles.btn} type="submit" disabled={loading}>
-            {loading && <span style={styles.spinner} />}{loading ? 'Creating...' : 'Register'}
+            {loading && <span style={styles.spinner} />}{loading ? 'Resetting...' : 'Reset Password'}
           </button>
-          <div style={styles.linkWrap}>
-            Already have an account? <Link to="/login" style={styles.link}>Sign in</Link>
+          <div style={{ textAlign: 'center' }}>
+            <Link to="/login" style={styles.link}>Back to Sign In</Link>
           </div>
         </div>
       </form>
